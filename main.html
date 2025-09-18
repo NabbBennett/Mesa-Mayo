@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Mesa Quirúrgica</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            max-width: 800px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .instructions p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .tools-container {
+            width: 200px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tools-container h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        
+        .tool {
+            width: 80px;
+            height: 80px;
+            margin: 10px;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            user-select: none;
+        }
+        
+        .tool:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tool img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+        
+        .tool span {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        
+        .table {
+            width: 600px;
+            height: 500px;
+            background-color: #2ecc71;
+            border: 15px solid #8B4513;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+        
+        .table::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+        
+        .tool-placed {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        
+        .tool-placed img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+        
+        .tool-placed span {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            text-align: center;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #reset-btn {
+            background: #e74c3c;
+        }
+        
+        #reset-btn:hover {
+            background: #c0392b;
+        }
+        
+        .tool-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tools-container {
+                width: 100%;
+                max-width: 600px;
+            }
+            
+            .table {
+                width: 100%;
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Simulador de Mesa Quirúrgica</h1>
+        <p>Organiza los utensilios en la mesa mayo como se hace en cirugía</p>
+    </header>
+    
+    <div class="instructions">
+        <p><strong>Instrucciones:</strong> Arrastra los utensilios desde el panel lateral y colócalos en la mesa quirúrgica. Puedes reorganizarlos arrastrándolos a nuevas posiciones.</p>
+        <p>Haz clic en "Reiniciar Mesa" para comenzar de nuevo o en "Organizar Automáticamente" para una disposición estándar.</p>
+    </div>
+    
+    <div class="container">
+        <div class="tools-container">
+            <h2>Utensilios Quirúrgicos</h2>
+            <div class="tool-list">
+                <div class="tool" draggable="true" data-tool="bisturi">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDgzLjEgNDguM2MtMjQuOC0yNC44LTY1LTI0LjgtODkuOCAwbC0yODAgMjgwYy0yNC44IDI0LjgtMjQuOCA2NSAwIDg5LjggMTUuNiAxNS42IDM2LjIgMjMuNCA1Ni42IDIzLjRzNDEtNy44IDU2LjYtMjMuNGwyODAtMjgwYzI0LjgtMjQuOCAyNC44LTY1IDAtODkuOHoiIGZpbGw9IiM1NTUiLz48cGF0aCBkPSJNMzUyIDM1MmMtMTcuNyAwLTMyIDE0LjMtMzIgMzJzMTQuMyAzMiAzMiAzMiAzMi0xNC4zIDMyLTMyLTE0LjMtMzItMzItMzJ6IiBmaWxsPSIjZmZmIi8+PC9zdmc+" alt="Bisturí">
+                    <span>Bisturí</span>
+                </div>
+                <div class="tool" draggable="true" data-tool="tijeras">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDQ2LjcgMTkwLjlsLTQyLjctNDIuN2MtMi43LTIuNy02LjEtNC4xLTkuNS00LjEtMy40IDAtNi44IDEuNC05LjUgNC4xTDI1NiAyNDMuMiAxMjYuMSAxMTMuM2MtMi43LTIuNy02LjEtNC4xLTkuNS00LjFzLTYuOCAxLjQtOS41IDQuMWwtNDIuNyA0Mi43Yy01LjQgNS40LTUuNCAxNC4zIDAgMTkuOGwxMzAgMTI5LjktMTMwIDEyOS45Yy01LjQgNS40LTUuNCAxNC4zIDAgMTkuOGw0Mi43IDQyLjdjMi43IDIuNyA2LjEgNC4xIDkuNSA0LjFzNi44LTEuNCA5LjUtNC4xTDI1NiAyNjguOGwxMjkuOSAxMjkuOWMyLjcgMi43IDYuMSA0LjEgOS41IDQuMXM2LjgtMS40IDkuNS00LjFsNDIuNy00Mi43YzUuNC01LjQgNS40LTE0LjMgMC0xOS44TDMyNi4xIDI1Ni40bDEzMC0xMjkuOWM1LjUtNS40IDUuNS0xNC4zLjEtMTkuNnoiIGZpbGw9IiM1NTUiLz48L3N2Zz4=" alt="Tijeras">
+                    <span>Tijeras</span>
+                </div>
+                <div class="tool" draggable="true" data-tool="pinzas">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDQ4IDI1NmMwLTEwNi04Ni0xOTItMTkyLTE5MlM2NCAxNTAgNjQgMjU2czg2IDE5MiAxOTIgMTkyIDE5Mi04NiAxOTItMTkyeiIgZmlsbD0iI2ZmYzMwMCIvPjxwYXRoIGQ9Ik0zNTIgMjA4YzAtMjYuNS0yMS41LTQ4LTQ4LTQ4cy00OCAyMS41LTQ4IDQ4IDIxLjUgNDggNDggNDggNDgtMjEuNSA0OC00OHptLTE5MiAwYzAtMjYuNS0yMS41LTQ4LTQ4LTQ4cy00OCAyMS41LTQ4IDQ4IDIxLjUgNDggNDggNDggNDgtMjEuNSA0OC00OHoiIGZpbGw9IiM1NTUiLz48cGF0aCBkPSJNMzY4IDM2MGMtMTMuMiAwLTI0LTEwLjgtMjQtMjRzMTAuOC0yNCAyNC0yNCAyNCAxMC44IDI0IDI0LTEwLjggMjQtMjQgMjR6bTI0LTcyYzAtMTMuMi0xMC44LTI0LTI0LTI0cy0yNCAxMC44LTI0IDI0IDEwLjggMjQgMjQgMjQgMjQtMTAuOCAyNC0yNHptLTcyIDcyYy0xMy4yIDAtMjQtMTAuOC0yNC0yNHMxMC44LTI0IDI0LTI0IDI0IDEwLjggMjQgMjQtMTAuOCAyNC0yNCAyNHptLTcyIDBjLTEzLjIgMC0yNC0xMC44LTI0LTI0czEwLjgtMjQgMjQtMjQgMjQgMTAuOCAyNCAyNC0xMC44IDI0LTI0IDI0em0tNzItNzJjMC0xMy4yLTEwLjgtMjQtMjQtMjRzLTI0IDEwLjgtMjQgMjQgMTAuOCAyNCAyNCAyNCAyNC0xMC44IDI0LTI0eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==" alt="Pinzas">
+                    <span>Pinzas</span>
+                </div>
+                <div class="tool" draggable="true" data-tool="portagujas">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDA2LjIgMTM3LjJsLTQwLjYtNDAuLjJjLTUuOC01LjgtMTQuMi05LjQtMjMuMi05LjQtOS4xIDAtMTcuNSA0LjEtMjMuNSA5LjRsLTQwLjIgNDAuMmMtNS44IDUuOC05LjQgMTQuMi05LjQgMjMuMnM0LjEgMTcuNSA5LjQgMjMuNGw0MC40IDQwLjRjNS44IDUuOCAxNC4yIDkuNCAyMy4yIDkuNHMxNy41LTQuMSAyMy40LTkuNGw0MC40LTQwLjRjMTIuNS0xMi41IDEyLjUtMzQuMiAwLTQ2Ljd6IiBmaWxsPSIjODhjZmZmIi8+PHBhdGggZD0iTTI1NiA1MTJjLTY4LjQgMC0xMzIuNy0yNi42LTE4MS4xLTc1LTVTNTAuNCAzMjQuNCA1MCAyNTZjMC02OC40IDI2LjYtMTMyLjcgNzUtMTgxLjFTMTg3LjYgMCAyNTYgMHMxMzIuNyAyNi42IDE4MS4xIDc1IDc1IDExMi43IDc1IDE4MS0yNi42IDEzMi43LTc1IDE4MS4xUzMyNC40IDUxMiAyNTYgNTEyeiIgZmlsbD0iI2ZmYzMwMCIvPjxwYXRoIGQ9Ik0yNTYgNDYxYy01Ni40IDAtMTA5LjUtMjEuOS0xNDkuNS02MS41UzQ1IDMxMi40IDQ1IDI1NmMwLTU2LjQgMjEuOS0xMDkuNSA2MS41LTE0OS41UzE5OS42IDUxIDI1NiA1MXMxMDkuNSAyMS45IDE0OS41IDYxLjVTNDY3IDE5OS42IDQ2NyAyNTZjMCA1Ni40LTIxLjkgMTA5LjUtNjEuNSAxNDkuNVszMTIuNCA0NjEgMjU2IDQ2MXoiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMzA0IDI1NmMwIDI2LjUtMjEuNSA0OC00OCA0OHMtNDgtMjEuNS00OC00OCAyMS41LTQ4IDQ4LTQ4IDQ4IDIxLjUgNDggNDh6IiBmaWxsPSIjNTU1Ii8+PC9zdmc+" alt="Portagujas">
+                    <span>Portagujas</span>
+                </div>
+                <div class="tool" draggable="true" data-tool="separador">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDQ4IDk2SDY0QzI4LjcgOTYgMCAxMjQuNyAwIDE2MHYxOTJjMCAzNS4zIDI4LjcgNjQgNjQgNjRoMzg0YzM1LjMgMCA2NC0yOC43IDY0LTY0VjE2MGMwLTM1LjMtMjguNy02NC02NC02NHoiIGZpbGw9IiM4OGNmZmYiLz48cGF0aCBkPSJNNDQ4IDk2YzE3LjYgMCAzMiAxNC40IDMyIDMydjY0SDMyVjEyOGMwLTE3LjYgMTQuNC0zMiAzMi0zMmgzODR6TTMyIDIyNHY2NGg0NDh2LTY0SDMyeiIgZmlsbD0iIzY2YSBmZmYiLz48cGF0aCBkPSJNNDQ4IDM4NGMtMTcuNiAwLTMyLTE0LjQtMzItMzJ2LTY0aDY0djY0YzAgMTcuNi0xNC40IDMyLTMyIDMyeiIgZmlsbD0iIzY2YSBmZmYiLz48L3N2Zz4=" alt="Separador">
+                    <span>Separador</span>
+                </div>
+                <div class="tool" draggable="true" data-tool="sutura">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDQ4IDI1NmMwLTEwNi04Ni0xOTItMTkyLTE5MlM2NCAxNTAgNjQgMjU2czg2IDE5MiAxOTIgMTkyIDE5Mi04NiAxOTItMTkzeiIgZmlsbD0iI2ZmYzMwMCIvPjxwYXRoIGQ9Ik0yNTYgNDE2Yy04OC40IDAtMTYwLTcxLjYtMTYwLTE2MHM3MS42LTE2MCAxNjAtMTYwIDE2MCA3MS42IDE2MCAxNjAtNzEuNiAxNjAtMTYwIDE2MHptMC0yODhjLTcwLjcgMC0xMjggNTcuMy0xMjggMTI4czU3LjMgMTI4IDEyOCAxMjggMTI4LTU3LjMgMTI4LTEyOC01Ny4zLTEyOC0xMjgtMTI4eiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0yNTYgMzUyYy01Mi45IDAtOTYtNDMuMS05Ni05NnM0My4xLTk2IDk2LTk2IDk2IDQzLjEgOTYgOTYtNDMuMSA5Ni05NiA5NnptMC0xNjBjLTM1LjMgMC02NCAyOC43LTY0IDY0czI4LjcgNjQgNjQgNjQgNjQtMjguNyA2NC02NC0yOC43LTY0LTY0LTY0eiIgZmlsbD0iIzU1NSIvPjwvc3ZnPg==" alt="Sutura">
+                    <span>Sutura</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table" id="surgical-table">
+            <!-- Aquí se colocarán los utensilios -->
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button id="reset-btn">Reiniciar Mesa</button>
+        <button id="organize-btn">Organizar Automáticamente</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = document.getElementById('surgical-table');
+            const resetBtn = document.getElementById('reset-btn');
+            const organizeBtn = document.getElementById('organize-btn');
+            let draggedTool = null;
+            let zIndex = 1;
+            
+            // Configurar eventos de arrastre para cada herramienta
+            document.querySelectorAll('.tool').forEach(tool => {
+                tool.addEventListener('dragstart', function(e) {
+                    draggedTool = this.cloneNode(true);
+                    draggedTool.classList.add('tool-placed');
+                    e.dataTransfer.setData('text/plain', this.getAttribute('data-tool'));
+                });
+            });
+            
+            // Configurar eventos para la mesa quirúrgica
+            table.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            table.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const toolType = e.dataTransfer.getData('text/plain');
+                
+                // Crear un nuevo elemento para la herramienta
+                const newTool = document.createElement('div');
+                newTool.classList.add('tool-placed');
+                newTool.setAttribute('data-tool', toolType);
+                
+                // Obtener la herramienta original para clonar su contenido
+                const originalTool = document.querySelector(`.tool[data-tool="${toolType}"]`);
+                newTool.innerHTML = originalTool.innerHTML;
+                
+                // Posicionar la herramienta donde se soltó
+                const rect = table.getBoundingClientRect();
+                const x = e.clientX - rect.left - 40;
+                const y = e.clientY - rect.top - 40;
+                
+                newTool.style.left = `${x}px`;
+                newTool.style.top = `${y}px`;
+                newTool.style.zIndex = zIndex++;
+                
+                // Hacer la herramienta arrastrable
+                newTool.draggable = true;
+                newTool.addEventListener('dragstart', function(ev) {
+                    ev.dataTransfer.setData('text/plain', 'move');
+                    draggedTool = this;
+                    this.style.opacity = '0.5';
+                });
+                
+                newTool.addEventListener('dragend', function() {
+                    this.style.opacity = '1';
+                });
+                
+                // Permitir reposicionamiento
+                newTool.addEventListener('dragover', function(ev) {
+                    ev.preventDefault();
+                });
+                
+                newTool.addEventListener('drop', function(ev) {
+                    ev.preventDefault();
+                    if (draggedTool !== this) {
+                        const thisZIndex = this.style.zIndex;
+                        this.style.zIndex = draggedTool.style.zIndex;
+                        draggedTool.style.zIndex = thisZIndex;
+                    }
+                });
+                
+                table.appendChild(newTool);
+            });
+            
+            // Reiniciar la mesa
+            resetBtn.addEventListener('click', function() {
+                const tools = table.querySelectorAll('.tool-placed');
+                tools.forEach(tool => tool.remove());
+            });
+            
+            // Organizar automáticamente
+            organizeBtn.addEventListener('click', function() {
+                // Limpiar la mesa primero
+                const tools = table.querySelectorAll('.tool-placed');
+                tools.forEach(tool => tool.remove());
+                
+                // Posiciones predefinidas para cada herramienta
+                const positions = {
+                    'bisturi': { left: 50, top: 50 },
+                    'tijeras': { left: 120, top: 50 },
+                    'pinzas': { left: 190, top: 50 },
+                    'portagujas': { left: 260, top: 50 },
+                    'separador': { left: 330, top: 50 },
+                    'sutura': { left: 400, top: 50 }
+                };
+                
+                // Colocar cada herramienta en su posición
+                document.querySelectorAll('.tool').forEach(tool => {
+                    const toolType = tool.getAttribute('data-tool');
+                    if (positions[toolType]) {
+                        const newTool = document.createElement('div');
+                        newTool.classList.add('tool-placed');
+                        newTool.setAttribute('data-tool', toolType);
+                        newTool.innerHTML = tool.innerHTML;
+                        
+                        newTool.style.left = `${positions[toolType].left}px`;
+                        newTool.style.top = `${positions[toolType].top}px`;
+                        newTool.style.zIndex = zIndex++;
+                        
+                        newTool.draggable = true;
+                        newTool.addEventListener('dragstart', function(ev) {
+                            ev.dataTransfer.setData('text/plain', 'move');
+                            draggedTool = this;
+                            this.style.opacity = '0.5';
+                        });
+                        
+                        newTool.addEventListener('dragend', function() {
+                            this.style.opacity = '1';
+                        });
+                        
+                        table.appendChild(newTool);
+                    }
+                });
+            });
+            
+            // Hacer que los elementos colocados sean arrastrables
+            table.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            table.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if (draggedTool && e.dataTransfer.getData('text/plain') === 'move') {
+                    const rect = table.getBoundingClientRect();
+                    const x = e.clientX - rect.left - 40;
+                    const y = e.clientY - rect.top - 40;
+                    
+                    draggedTool.style.left = `${x}px`;
+                    draggedTool.style.top = `${y}px`;
+                    draggedTool.style.zIndex = zIndex++;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
