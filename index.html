@@ -1,0 +1,302 @@
+Solución Mejorada con Posiciones Específicas
+
+He revisado tu imagen y he reorganizado la mesa para que coincida con el diseño que proporcionaste. También he implementado la funcionalidad para que los objetos se queden en la mesa cuando se colocan correctamente, y que los corazones desaparezcan cuando se pierden vidas.
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería de Objetos Interactiva</title>
+   
+        .items-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .item {
+            width: 100%;
+            height: 70px;
+            background: linear-gradient(145deg, #6a89cc, #4a69bd);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            cursor: grab;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            user-select: none;
+        }
+        
+        .item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .item.dragging {
+            opacity: 0.6;
+            cursor: grabbing;
+        }
+        
+        .table-container {
+            flex: 1;
+            background-color: rgba(139, 69, 19, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .table {
+            width: 100%;
+            height: 100%;
+            background-color: #8B4513;
+            border-radius: 15px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 10px solid #6b3407;
+        }
+        
+        .drop-zone {
+            background-color: #1e88e5;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .drop-zone.correct {
+            background-color: #43a047;
+        }
+        
+        .drop-zone.incorrect {
+            background-color: #e53935;
+            animation: shake 0.5s;
+        }
+        
+        .hidden-item {
+            background-color: #ff5252;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            border-radius: 10px;
+            font-size: 18px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .hidden-item.revealed {
+            opacity: 1;
+        }
+        
+        .item-info {
+            position: absolute;
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 250px;
+            z-index: 100;
+            display: none;
+            font-size: 14px;
+            color: #333;
+            border: 2px solid #4a69bd;
+        }
+        
+        .item-info h3 {
+            margin-bottom: 8px;
+            color: #1a237e;
+        }
+        
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .game-over-content {
+            background: linear-gradient(135deg, #ff5252, #b71c1c);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 0 30px rgba(255, 82, 82, 0.6);
+        }
+        
+        .game-over-content h2 {
+            font-size: 40px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .restart-btn {
+            background: linear-gradient(145deg, #4caf50, #2e7d32);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+        
+        .instructions {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 16px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .empty-cell {
+            background-color: transparent;
+            border: 2px dashed #6b3407;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title">Galería de Objetos</div>
+        <div class="hearts">
+            <div class="heart">❤️</div>
+            <div class="heart">❤️</div>
+            <div class="heart">❤️</div>
+        </div>
+    </header>
+    
+    <div class="game-container">
+        <div class="items-container" id="left-container">
+            <div class="items-title">Objetos Disponibles</div>
+            <div class="item" draggable="true" data-id="1" data-info="Objeto 1: Una herramienta esencial para completar tu colección">1</div>
+            <div class="item" draggable="true" data-id="2" data-info="Objeto 2: Pieza clave para revelar secretos ocultos">2</div>
+            <div class="item" draggable="true" data-id="3" data-info="Objeto 3: De valor incalculable para los coleccionistas">3</div>
+            <div class="item" draggable="true" data-id="4" data-info="Objeto 4: Fabricado con los mejores materiales">4</div>
+            <div class="item" draggable="true" data-id="5" data-info="Objeto 5: Una rareza difícil de encontrar">5</div>
+            <div class="item" draggable="true" data-id="6" data-info="Objeto 6: Con poderes especiales durante la noche">6</div>
+            <div class="item" draggable="true" data-id="7" data-info="Objeto 7: Perfectamente conservado desde la antigüedad">7</div>
+            <div class="item" draggable="true" data-id="8" data-info="Objeto 8: Brilla intensamente bajo luz ultravioleta">8</div>
+        </div>
+        
+        <div class="table-container">
+            <div class="table">
+                <!-- Fila 1: Objetos 1-8 -->
+                <div class="drop-zone" data-correct="1"></div>
+                <div class="drop-zone" data-correct="2"></div>
+                <div class="drop-zone" data-correct="3"></div>
+                <div class="drop-zone" data-correct="4"></div>
+                <div class="drop-zone" data-correct="5"></div>
+                <div class="drop-zone" data-correct="6"></div>
+                <div class="drop-zone" data-correct="7"></div>
+                <div class="drop-zone" data-correct="8"></div>
+                
+                <!-- Fila 2: Objeto 15 -->
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="drop-zone" data-correct="15"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                
+                <!-- Fila 3: Objetos 16-23 -->
+                <div class="drop-zone" data-correct="16"></div>
+                <div class="drop-zone" data-correct="17"></div>
+                <div class="drop-zone" data-correct="18"></div>
+                <div class="drop-zone" data-correct="19"></div>
+                <div class="drop-zone" data-correct="20"></div>
+                <div class="drop-zone" data-correct="21"></div>
+                <div class="drop-zone" data-correct="22"></div>
+                <div class="drop-zone" data-correct="23"></div>
+                
+                <!-- Fila 4: Vacía -->
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+                <div class="empty-cell"></div>
+            </div>
+        </div>
+        
+        <div class="items-container" id="right-container">
+            <div class="items-title">Más Objetos</div>
+            <div class="item" draggable="true" data-id="15" data-info="Objeto 15: Emite un sonido peculiar al acercarse">15</div>
+            <div class="item" draggable="true" data-id="16" data-info="Objeto 16: Cambia de color según la temperatura">16</div>
+            <div class="item" draggable="true" data-id="17" data-info="Objeto 17: Pieza fundamental del rompecabezas">17</div>
+            <div class="item" draggable="true" data-id="18" data-info="Objeto 18: Materializado a través de tecnología avanzada">18</div>
+            <div class="item" draggable="true" data-id="19" data-info="Objeto 19: Resistente al agua y al fuego">19</div>
+            <div class="item" draggable="true" data-id="20" data-info="Objeto 20: Puede duplicarse en condiciones específicas">20</div>
+            <div class="item" draggable="true" data-id="21" data-info="Objeto 21: Absorbe la energía solar">21</div>
+            <div class="item" draggable="true" data-id="22" data-info="Objeto 22: Se vuelve más ligero por la noche">22</div>
+            <div class="item" draggable="true" data-id="23" data-info="Objeto 23: El último objeto necesario para completar la colección">23</div>
+        </div>
+    </div>
+    
+    <div class="item-info"></div>
+    
+    <div class="game-over">
+        <div class="game-over-content">
+            <h2>¡FALLASTE!</h2>
+            <button class="restart-btn">Reiniciar Juego</button>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        Arrastra los objetos azules a sus posiciones correctas en la mesa central.
+        ¡Cuidado! Solo tienes 3 intentos. Si fallas 3 veces, perderás el juego.
+    </div>
+</body>
+</html>
+         
