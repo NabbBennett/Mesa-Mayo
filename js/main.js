@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Redirigir después de un breve delay
                 setTimeout(() => {
-                    window.location.href = 'index.html'; // Cambia por tu URL
+                    window.location.href = 'paginas/index.html'; 
                 }, 1500);
             } else {
                 // Imagen incorrecta
