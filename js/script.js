@@ -68,13 +68,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const id = e.dataTransfer.getData('text/plain');
         const draggable = document.querySelector(`.item-image[data-id="${id}"]`);
-        const correctId = this.getAttribute('data-correct');
+        const correctIds = this.getAttribute('data-correct').split(","); // Soporta múltiples
         
         if (this.querySelector('.item-image')) {
             return;
         }
         
-        if (id === correctId) {
+        if (correctIds.includes(id)) {
             const clone = draggable.cloneNode(true);
             clone.classList.add('placed');
             clone.style.position = 'static';
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
         } else {
-            // Sacudon pantalla
+            // Sacudida de pantalla
             const gameContainer = document.querySelector('.game-container');
             gameContainer.classList.add('screen-shake');
             this.classList.add('incorrect');
@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         }
     }
+
     
     function showWinPanel() {
         winPanel.style.display = 'flex';
@@ -175,6 +176,19 @@ document.addEventListener('DOMContentLoaded', function() {
         itemInfo.style.display = 'none';
     }
     
+    // Mezclar aleatoriamente los instrumentos
+    const itemsContainer = document.getElementById("bottom-container");
+    const items = Array.from(itemsContainer.children);
+
+    // Algoritmo Fisher-Yates
+    for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+    }
+
+    // Limpiar y pone en aleatorio
+    items.forEach(item => itemsContainer.appendChild(item));
+
     const style = document.createElement('style');
     style.textContent = `
         .drop-zone.correct {
