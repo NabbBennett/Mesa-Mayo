@@ -10,6 +10,8 @@ background: linear-gradient(135deg, #1a2a6c, #324157, #000000);
 min-height: 100vh;
 display: flex;
 flex-direction: column;
+justify-content: center;
+align-items: center;
 overflow-x: hidden;
 padding: 20px;
 }
@@ -75,14 +77,14 @@ transform: translateX(-50%);
 }
 
 .section-title {
-    position: absolute;
-    top: 0px;
-    background: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 14px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+position: absolute;
+top: 0px;
+background: white;
+padding: 5px 10px;
+border-radius: 5px;
+font-weight: bold;
+font-size: 14px;
+box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .table {
