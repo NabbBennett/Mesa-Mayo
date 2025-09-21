@@ -8,12 +8,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const losePanel = document.querySelector('.lose-panel');
     const restartButtons = document.querySelectorAll('.restart-btn');
     
+    // Crear elementos de audio
+    const correctSound = new Audio('../resources/correct.mp3'); 
+    const wrongSound = new Audio('../resources/incorrect.mp3');     
+
     // Variables
     let incorrectAttempts = 0;
     const maxAttempts = 3;
     let correctPlacements = 0;
     const totalItems = 20;
+
+    // Configurar sonidos
+    correctSound.volume = 0.7;
+    wrongSound.volume = 0.7;
     
+    // Precargar sonidos (opcional)
+    function preloadSounds() {
+        correctSound.load();
+        wrongSound.load();
+    }
+
+    // Llamar a la precarga de sonidos
+    preloadSounds();
+
     // Funcionalidad de arrastrar y soltar 
     draggableItems.forEach(item => {
         item.addEventListener('dragstart', dragStart);
@@ -68,13 +85,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const id = e.dataTransfer.getData('text/plain');
         const draggable = document.querySelector(`.item-image[data-id="${id}"]`);
-        const correctIds = this.getAttribute('data-correct').split(","); // Soporta múltiples
+        const correctIds = this.getAttribute('data-correct').split(","); 
         
         if (this.querySelector('.item-image')) {
             return;
         }
         
         if (correctIds.includes(id)) {
+            // Reproducir sonido de acierto
+            correctSound.currentTime = 0;
+            correctSound.play();
+
+            // Colocar el elemento
             const clone = draggable.cloneNode(true);
             clone.classList.add('placed');
             clone.style.position = 'static';
@@ -95,6 +117,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
         } else {
+            // Reproducir sonido de error
+                wrongSound.currentTime = 0;
+                wrongSound.play();
+
             // Sacudida de pantalla
             const gameContainer = document.querySelector('.game-container');
             gameContainer.classList.add('screen-shake');
